@@ -42,11 +42,16 @@ cd spicetify-account-switcher
 
 `--apply` runs `spicetify apply` (Spotify restarts once).
 
-**Installed the extension from the Spicetify Marketplace?** You still need the helper once:
+**Installed the extension from the Spicetify Marketplace?** You still need the helper once.
+Open Terminal (Applications › Utilities), paste this line and press Enter – the switcher menu in
+Spotify shows the same line with a copy button:
 
 ```bash
-./install.sh --helper-only
+curl -fsSL https://raw.githubusercontent.com/JustNotesa/spicetify-account-switcher/main/install-helper.sh | bash
 ```
+
+It only downloads and registers the helper (no Spicetify changes). Remove it again with
+`... install-helper.sh | bash -s -- --uninstall`.
 
 ### First use
 

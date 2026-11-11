@@ -240,6 +240,7 @@ async function main() {
                addDisabled: add.getAttribute("aria-disabled"), addLast: m.lastElementChild === add };
     });
     check("Hinweis „Hilfsdienst läuft nicht – install.sh ausführen“", un.hint.includes("Hilfsdienst läuft nicht") && un.hint.includes("install.sh"), un);
+    check("Hinweis zeigt Ein-Zeilen-Befehl install-helper.sh + Kopierknopf", un.hint.includes("install-helper.sh | bash") && un.hint.includes("Befehl kopieren"), un);
     check("Keine Kontoliste, „Konto hinzufügen“ deaktiviert + letzter Eintrag", !un.list && un.addDisabled === "true" && un.addLast, un);
     const before = await page.evaluate(() => window.__notifications.length);
     await page.click(".msw-add", { force: true });

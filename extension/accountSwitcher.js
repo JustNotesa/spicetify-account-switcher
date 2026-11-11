@@ -13,6 +13,7 @@
   window.__mswAccountSwitcherLoaded = true;
 
   // Nur für Tests überschreibbar (Harness setzt window.__MSW_HELPER_URL__ vor dem Laden).
+  const HELPER_INSTALL_CMD = "curl -fsSL https://raw.githubusercontent.com/JustNotesa/spicetify-account-switcher/main/install-helper.sh | bash";
   const HELPER = String(window.__MSW_HELPER_URL__ || "http://127.0.0.1:48655").replace(/\/+$/, "");
   // Der Hilfsdienst ist socket-aktiviert: Nach ~60 s Leerlauf beendet er sich, die nächste Anfrage startet
   // Python neu. Darum großzügiges Timeout, solange seit einer Weile keine Antwort kam, danach kürzer.
@@ -247,6 +248,11 @@
 .msw-hint{padding:10px 12px;font-size:.8125rem;color:var(--spice-subtext,#b3b3b3)}
 .msw-hint strong{color:var(--spice-text,#fff);font-weight:700;display:block;margin-bottom:2px}
 .msw-hint code{font-family:var(--encore-mono-font-stack,monospace);font-size:.75rem}
+.msw-hint span{display:block}
+.msw-hint .msw-cmd{display:block;margin:8px 0 6px;padding:6px 8px;border-radius:4px;background:rgba(255,255,255,.08);color:var(--spice-text,#fff);user-select:all;-webkit-user-select:all;word-break:break-all;line-height:1.35}
+.msw-hint .msw-copy{display:inline-block;margin:0 10px 0 0;padding:4px 12px;border:0;border-radius:999px;background:var(--spice-button,#1ed760);color:#000;font-weight:700;font-size:.75rem;cursor:pointer}
+.msw-hint .msw-copy:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.msw-hint a{color:var(--spice-text,#fff);font-size:.75rem}
 .msw-loading{padding:14px 12px;font-size:.8125rem;color:var(--spice-subtext,#b3b3b3)}
 .msw-fallback-btn{all:unset;box-sizing:border-box;width:32px;height:32px;border-radius:50%;
   display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
@@ -403,18 +409,35 @@
     if (!reachable) {
       const hint = el("div", "hint", { role: "note" });
       const strong = document.createElement("strong");
-      strong.textContent = "Hilfsdienst läuft nicht";
+      strong.textContent = "Hilfsdienst läuft nicht – einmalige Einrichtung";
       const txt = document.createElement("span");
-      txt.append("Bitte ");
-      const code = document.createElement("code");
-      code.textContent = "install.sh";
+      txt.textContent = "Terminal öffnen (Programme › Dienstprogramme), Befehl einfügen, Enter drücken:";
+      const code = el("code", "cmd");
+      code.textContent = HELPER_INSTALL_CMD;
+      const copy = el("button", "copy", { type: "button", "data-msw-focus": "", role: "menuitem", tabindex: "-1" });
+      copy.textContent = "Befehl kopieren";
+      copy.addEventListener("click", async (ev) => {
+        ev.stopPropagation();
+        let ok = false;
+        try { await navigator.clipboard.writeText(HELPER_INSTALL_CMD); ok = true; } catch (_) {}
+        if (!ok) {
+          try {
+            const range = document.createRange();
+            range.selectNodeContents(code);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            ok = document.execCommand("copy");
+          } catch (_) {}
+        }
+        copy.textContent = ok ? "Kopiert ✓" : "Bitte Befehl markieren und kopieren";
+      });
       const link = document.createElement("a");
       link.href = "https://github.com/JustNotesa/spicetify-account-switcher#installation";
       link.target = "_blank";
       link.rel = "noopener";
-      link.textContent = "Anleitung";
-      txt.append(code, " ausführen (", link, ").");
-      hint.append(strong, txt);
+      link.textContent = "Anleitung (install.sh)";
+      hint.append(strong, txt, code, copy, link);
       menu.appendChild(hint);
     } else if (!res.ok) {
       const hint = el("div", "hint", { role: "note" });
