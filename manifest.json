@@ -1,0 +1,13 @@
+[
+  {
+    "name": "Account Switcher",
+    "description": "Multi-account switcher button for Spotify on macOS: switch accounts in ~2 s without re-login, add accounts via password login. Needs the small helper from the README (install.sh --helper-only).",
+    "preview": "docs/preview.png",
+    "main": "extension/accountSwitcher.js",
+    "readme": "README.md",
+    "authors": [
+      { "name": "JustNotesa", "url": "https://github.com/JustNotesa" }
+    ],
+    "tags": ["account", "multi-account", "switcher", "macos"]
+  }
+]

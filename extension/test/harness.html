@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Account-Switcher Harness</title>
+<style>
+  :root{
+    --spice-main:#121212; --spice-main-elevated:#282828; --spice-highlight-elevated:#3e3e3e;
+    --spice-text:#ffffff; --spice-subtext:#b3b3b3; --spice-button:#1ed760; --spice-button-disabled:#535353;
+    --spice-notification-error:#e91429; --spice-rgb-selected-row:255,255,255; --spice-rgb-text:255,255,255;
+  }
+  html,body{margin:0;height:100%;background:#000;color:#fff;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif}
+  .main-globalNav{display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 8px 0 80px;background:#000}
+  .main-globalNav-historyButtons{display:flex;gap:8px}
+  .main-globalNav-icon,.main-topBar-buddyFeed{all:unset;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#b3b3b3;cursor:pointer}
+  .main-globalNav-icon{background:#1f1f1f}
+  .main-topBar-buddyFeed:hover,.main-globalNav-icon:hover{color:#fff}
+  .search{flex:0 1 420px;height:48px;border-radius:24px;background:#1f1f1f;display:flex;align-items:center;padding:0 16px;color:#b3b3b3;font-size:14px}
+  .main-globalNav-contentRight{display:flex;align-items:center;gap:8px}
+  .main-actionButtons{display:flex;align-items:center;gap:8px}
+  .main-userWidget-box{all:unset;width:48px;height:48px;border-radius:50%;background:#1f1f1f;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .main-userWidget-box span{width:32px;height:32px;border-radius:50%;background:#8d67ab;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .content{display:flex;gap:8px;padding:0 8px;height:calc(100% - 64px)}
+  .lib{width:280px;background:#121212;border-radius:8px}
+  .main{flex:1;background:linear-gradient(#2a2a4a,#121212 40%);border-radius:8px;padding:24px;font-size:28px;font-weight:700}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#000;padding:10px 16px;border-radius:6px;font-size:14px;display:none}
+  #toast.err{background:#e91429;color:#fff}
+</style>
+</head>
+<body>
+  <header class="main-globalNav">
+    <div class="main-globalNav-historyButtonsWrapper"><div class="main-globalNav-historyButtons">
+      <button class="main-globalNav-icon" aria-label="Zurück">&lsaquo;</button>
+      <button class="main-globalNav-icon" aria-label="Vor">&rsaquo;</button>
+    </div></div>
+    <div class="search">Was möchtest du wiedergeben?</div>
+    <div class="main-globalNav-contentRight">
+      <div class="main-actionButtons">
+        <button class="main-topBar-buddyFeed" aria-label="Freundesaktivität">&#128276;</button>
+      </div>
+      <button class="main-userWidget-box" data-testid="user-widget-link" aria-label="Max Mustermann"><span>M</span></button>
+    </div>
+  </header>
+  <div class="content"><div class="lib"></div><div class="main">Guten Tag</div></div>
+  <div id="toast"></div>
+
+<script>
+// ---- Spicetify-Stub (Topbar.Button nachgebaut wie in spicetifyWrapper.js 2.46.4) ----
+(function () {
+  const q = new URLSearchParams(location.search);
+  const topbarMode = q.get("topbar") || "real"; // real | none | broken
+  const userMode = q.get("user") || "api";      // api | cosmos
+  window.__MSW_HELPER_URL__ = q.get("helper");
+  window.__notifications = [];
+
+  function Topbar() {
+    const rightCls = document.querySelector(".main-actionButtons .main-topBar-buddyFeed").className;
+    class Button {
+      constructor(label, icon, onClick, disabled = false, isRight = false) {
+        this.element = document.createElement("div");
+        this.element.classList.add("spicetify-topbar-button");
+        this.button = document.createElement("button");
+        this.button.className = rightCls;
+        this.button.setAttribute("aria-label", label);
+        this.button.title = label;
+        this.button.innerHTML = icon;
+        this.button.onclick = () => onClick(this);
+        this.button.disabled = disabled;
+        this.element.appendChild(this.button);
+        if (topbarMode === "real") {
+          const right = document.querySelector(".main-globalNav-contentRight > .main-actionButtons, .main-actionButtons");
+          if (isRight) right.prepend(this.element);
+          else document.querySelector(".main-globalNav-historyButtons").append(this.element);
+        }
+        // "broken": Spicetify findet die Leiste nicht → Element wird nie eingehängt
+      }
+    }
+    return { Button };
+  }
+
+  const me = { username: "maxmuster", displayName: "Max Mustermann",
+               images: [{ url: "https://i.scdn.co/image/klein", width: 32 }, { url: "https://i.scdn.co/image/mittel", width: 64 }] };
+
+  // Spicetify kommt verzögert (wie im echten Client)
+  setTimeout(() => {
+    window.Spicetify = {
+      showNotification(text, isError, ms) {
+        window.__notifications.push({ text, isError: !!isError, ms });
+        const t = document.getElementById("toast");
+        t.textContent = text; t.className = isError ? "err" : ""; t.style.display = "block";
+      },
+      CosmosAsync: { async get(url) {
+        window.__cosmosCalls = (window.__cosmosCalls || []).concat(url);
+        if (url === "https://api.spotify.com/v1/me") return { id: me.username, display_name: me.displayName, images: [{ url: me.images[1].url }] };
+        throw new Error("unexpected " + url);
+      } },
+      Platform: userMode === "api"
+        ? { UserAPI: { async getUser() { return { type: "user", uri: "spotify:user:" + me.username, ...me }; } } }
+        : {},
+    };
+    if (topbarMode !== "none") window.Spicetify.Topbar = Topbar();
+  }, 300);
+})();
+</script>
+<script src="/accountSwitcher.js"></script>
+</body>
+</html>
