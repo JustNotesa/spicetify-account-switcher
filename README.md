@@ -16,6 +16,9 @@ A simple multi-account switcher button for the Spotify desktop app on **macOS** 
 
 The UI is in German.
 
+> **Note:** This is not a seamless in-place switch. Spotify can only run one account per app process,
+> so switching opens the other account in a new Spotify window and then closes the old one.
+
 ## How it works
 
 Spotify can run with `--mu=<id>`, which gives each instance its own data folder
@@ -72,6 +75,7 @@ node extension/test/run-tests.js                     # extension, headless Chrom
 Ein Knopf oben in Spotify zum Kontowechsel. Jedes Konto hat ein eigenes Spotify-Profil und bleibt
 angemeldet. Ein Klick startet das andere Profil an derselben Stelle und schließt danach das alte.
 „Konto hinzufügen“ öffnet ein neues Spotify-Fenster und im Browser die Passwort-Anmeldung.
+Hinweis: kein nahtloser Wechsel im selben Fenster – jedes Konto läuft in einem eigenen Spotify-Fenster.
 Installation: `./install.sh --apply`.
 
 ## License
