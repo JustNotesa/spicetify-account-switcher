@@ -1,0 +1,5 @@
+#!/bin/sh
+# Launcher for the Spotify account switcher helper. It exists only so that macOS lists the
+# background item as "Spotify-Kontowechsel" (System Settings > General > Login Items) instead
+# of "python3". exec keeps the process, so the launchd socket handover still works.
+exec /usr/bin/python3 "$(dirname "$0")/spotify_accounts_helper.py" "$@"

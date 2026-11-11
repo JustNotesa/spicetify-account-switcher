@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  Template (v2). install.sh replaces __SCRIPT__ (installed helper script) and
+  Template (v2). install.sh replaces __LAUNCHER__ (installed launcher "Spotify-Kontowechsel") and
   __MA_DIR__ (~/Library/Application Support/spotify-multiaccount), XML-escaped,
   and writes the result to ~/Library/LaunchAgents/com.spotify-multiaccount.switcher.plist.
 
@@ -15,8 +15,7 @@
     <string>com.spotify-multiaccount.switcher</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/bin/python3</string>
-        <string>__SCRIPT__</string>
+        <string>__LAUNCHER__</string>
     </array>
     <key>Sockets</key>
     <dict>

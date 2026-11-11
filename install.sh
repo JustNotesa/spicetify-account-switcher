@@ -25,6 +25,7 @@ MA_DIR="$HOME/Library/Application Support/spotify-multiaccount"
 V1_DIR="$HOME/Library/Application Support/Spotify-Accounts"
 BIN_DIR="$MA_DIR/bin"
 SCRIPT="$BIN_DIR/spotify_accounts_helper.py"
+LAUNCHER="$BIN_DIR/Spotify-Kontowechsel"
 AGENTS_DIR="$HOME/Library/LaunchAgents"
 PLIST="$AGENTS_DIR/$LABEL.plist"
 V1_PLIST="$AGENTS_DIR/$V1_LABEL.plist"
@@ -59,14 +60,15 @@ mkdir -p "$BIN_DIR"
 chmod 700 "$MA_DIR"
 chmod 755 "$BIN_DIR"
 install -m 644 "$PROJECT_DIR/helper/spotify_accounts_helper.py" "$SCRIPT"
+install -m 755 "$PROJECT_DIR/helper/Spotify-Kontowechsel" "$LAUNCHER"
 
 mkdir -p "$AGENTS_DIR"
-/usr/bin/python3 - "$PROJECT_DIR/helper/$LABEL.plist" "$PLIST" "$SCRIPT" "$MA_DIR" <<'PY'
+/usr/bin/python3 - "$PROJECT_DIR/helper/$LABEL.plist" "$PLIST" "$LAUNCHER" "$MA_DIR" <<'PY'
 import sys
 from xml.sax.saxutils import escape
-src, dst, script, ma_dir = sys.argv[1:5]
+src, dst, launcher, ma_dir = sys.argv[1:5]
 text = open(src, encoding="utf-8").read()
-text = text.replace("__SCRIPT__", escape(script)).replace("__MA_DIR__", escape(ma_dir))
+text = text.replace("__LAUNCHER__", escape(launcher)).replace("__MA_DIR__", escape(ma_dir))
 with open(dst, "w", encoding="utf-8") as fh:
     fh.write(text)
 PY

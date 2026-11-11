@@ -18,6 +18,7 @@ LABEL="com.spotify-multiaccount.switcher"
 MA_DIR="$HOME/Library/Application Support/spotify-multiaccount"
 BIN_DIR="$MA_DIR/bin"
 SCRIPT="$BIN_DIR/spotify_accounts_helper.py"
+LAUNCHER="$BIN_DIR/Spotify-Kontowechsel"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 DOMAIN="gui/$(id -u)"
 PORT=48655
@@ -49,18 +50,20 @@ trap 'rm -rf "$TMP"' EXIT
 echo "Downloading helper ..."
 curl -fsSL "$BASE_URL/helper/spotify_accounts_helper.py" -o "$TMP/helper.py"
 curl -fsSL "$BASE_URL/helper/$LABEL.plist" -o "$TMP/helper.plist"
+curl -fsSL "$BASE_URL/helper/Spotify-Kontowechsel" -o "$TMP/launcher"
 /usr/bin/python3 -c 'import sys; compile(open(sys.argv[1]).read(), sys.argv[1], "exec")' "$TMP/helper.py"
 
 mkdir -p "$BIN_DIR" "$HOME/Library/LaunchAgents"
 chmod 700 "$MA_DIR"
 install -m 644 "$TMP/helper.py" "$SCRIPT"
+install -m 755 "$TMP/launcher" "$LAUNCHER"
 
-/usr/bin/python3 - "$TMP/helper.plist" "$PLIST" "$SCRIPT" "$MA_DIR" <<'PY'
+/usr/bin/python3 - "$TMP/helper.plist" "$PLIST" "$LAUNCHER" "$MA_DIR" <<'PY'
 import sys
 from xml.sax.saxutils import escape
-src, dst, script, ma_dir = sys.argv[1:5]
+src, dst, launcher, ma_dir = sys.argv[1:5]
 text = open(src, encoding="utf-8").read()
-text = text.replace("__SCRIPT__", escape(script)).replace("__MA_DIR__", escape(ma_dir))
+text = text.replace("__LAUNCHER__", escape(launcher)).replace("__MA_DIR__", escape(ma_dir))
 with open(dst, "w", encoding="utf-8") as fh:
     fh.write(text)
 PY
